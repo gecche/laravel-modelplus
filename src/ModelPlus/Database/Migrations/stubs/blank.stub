@@ -1,0 +1,28 @@
+<?php
+
+use Gecche\ModelPlus\Facades\Schema;
+use Gecche\ModelPlus\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class DummyClass extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        //
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        //
+    }
+}
