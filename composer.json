@@ -1,0 +1,30 @@
+{
+    "name": "gecche/laravel-modelplus",
+    "description": "Extending Laravel Eloquent model",
+    "keywords": ["laravel", "eloquent", "model"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Giacomo Terreni",
+            "email": "giacomo.terreni@gmail.com"
+        }
+    ],
+    "require": {
+        "laravel/framework": "5.5.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Gecche\\ModelPlus\\": "src/"
+        },
+        "files": [
+
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+
+            ]
+        }
+    }
+}
