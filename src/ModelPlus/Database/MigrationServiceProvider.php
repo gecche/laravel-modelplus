@@ -48,7 +48,10 @@ class MigrationServiceProvider extends \Illuminate\Database\MigrationServiceProv
      */
     public function boot()
     {
-        $this->app->extend('command.migrate.make', function ($app) {
+
+        $app = $this->app;
+
+        $this->app->extend('command.migrate.make', function () use ($app) {
             // Once we have the migration creator registered, we will create the command
             // and inject the creator. The creator is responsible for the actual file
             // creation of the migrations, and may be extended by these developers.

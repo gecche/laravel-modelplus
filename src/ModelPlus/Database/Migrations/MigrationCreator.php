@@ -9,30 +9,6 @@ use Illuminate\Filesystem\Filesystem;
 
 class MigrationCreator extends \Illuminate\Database\Migrations\MigrationCreator
 {
-    /**
-     * The filesystem instance.
-     *
-     * @var \Illuminate\Filesystem\Filesystem
-     */
-    protected $files;
-
-    /**
-     * The registered post create hooks.
-     *
-     * @var array
-     */
-    protected $postCreate = [];
-
-    /**
-     * Create a new migration creator instance.
-     *
-     * @param  \Illuminate\Filesystem\Filesystem  $files
-     * @return void
-     */
-    public function __construct(Filesystem $files)
-    {
-        $this->files = $files;
-    }
 
     /**
      * Create a new migration at the given path.
@@ -44,7 +20,7 @@ class MigrationCreator extends \Illuminate\Database\Migrations\MigrationCreator
      * @return string
      * @throws \Exception
      */
-    public function create($name, $path, $table = null, $create = false)
+    public function create($name, $path, $table = null, $create = false, $timestamps = 'yes', $ownerships = 'no')
     {
         $this->ensureMigrationDoesntAlreadyExist($name);
 
@@ -55,7 +31,7 @@ class MigrationCreator extends \Illuminate\Database\Migrations\MigrationCreator
 
         $this->files->put(
             $path = $this->getPath($name, $path),
-            $this->populateStub($name, $stub, $table)
+            $this->populateStub($name, $stub, $table, $timestamps, $ownerships)
         );
 
         // Next, we will fire any hooks that are supposed to fire after a migration is
@@ -66,41 +42,6 @@ class MigrationCreator extends \Illuminate\Database\Migrations\MigrationCreator
         return $path;
     }
 
-    /**
-     * Ensure that a migration with the given name doesn't already exist.
-     *
-     * @param  string  $name
-     * @return void
-     *
-     * @throws \InvalidArgumentException
-     */
-    protected function ensureMigrationDoesntAlreadyExist($name)
-    {
-        if (class_exists($className = $this->getClassName($name))) {
-            throw new InvalidArgumentException("A {$className} class already exists.");
-        }
-    }
-
-    /**
-     * Get the migration stub file.
-     *
-     * @param  string  $table
-     * @param  bool    $create
-     * @return string
-     */
-    protected function getStub($table, $create)
-    {
-        if (is_null($table)) {
-            return $this->files->get($this->stubPath().'/blank.stub');
-        }
-
-        // We also have stubs for creating new tables and modifying existing tables
-        // to save the developer some typing when they are creating a new tables
-        // or modifying existing tables. We'll grab the appropriate stub here.
-        $stub = $create ? 'create.stub' : 'update.stub';
-
-        return $this->files->get($this->stubPath()."/{$stub}");
-    }
 
     /**
      * Populate the place-holders in the migration stub.
@@ -110,8 +51,10 @@ class MigrationCreator extends \Illuminate\Database\Migrations\MigrationCreator
      * @param  string  $table
      * @return string
      */
-    protected function populateStub($name, $stub, $table)
+    protected function populateStub($name, $stub, $table, $timestamps = 'yes', $ownerships = 'no')
     {
+        var_dump($timestamps);
+        var_dump($ownerships);
         $stub = str_replace('DummyClass', $this->getClassName($name), $stub);
 
         // Here we will replace the table place-holders with the table specified by
@@ -121,63 +64,29 @@ class MigrationCreator extends \Illuminate\Database\Migrations\MigrationCreator
             $stub = str_replace('DummyTable', $table, $stub);
         }
 
-        return $stub;
-    }
-
-    /**
-     * Get the class name of a migration name.
-     *
-     * @param  string  $name
-     * @return string
-     */
-    protected function getClassName($name)
-    {
-        return Str::studly($name);
-    }
-
-    /**
-     * Get the full path to the migration.
-     *
-     * @param  string  $name
-     * @param  string  $path
-     * @return string
-     */
-    protected function getPath($name, $path)
-    {
-        return $path.'/'.$this->getDatePrefix().'_'.$name.'.php';
-    }
-
-    /**
-     * Fire the registered post create hooks.
-     *
-     * @return void
-     */
-    protected function firePostCreateHooks()
-    {
-        foreach ($this->postCreate as $callback) {
-            call_user_func($callback);
+        switch ($timestamps) {
+            case 'no':
+                $stub = str_replace('$table->timestamps();', '', $stub);
+                break;
+            case 'nullable':
+                $stub = str_replace('$table->timestamps()', '$table->nullableTimestamps()', $stub);
+                break;
+            default:
+                break;
         }
-    }
 
-    /**
-     * Register a post migration create hook.
-     *
-     * @param  \Closure  $callback
-     * @return void
-     */
-    public function afterCreate(Closure $callback)
-    {
-        $this->postCreate[] = $callback;
-    }
+        switch ($ownerships) {
+            case 'no':
+                $stub = str_replace('$table->ownerships();', '', $stub);
+                break;
+            case 'nullable':
+                $stub = str_replace('$table->ownerships()', '$table->nullableOwnerships()', $stub);
+                break;
+            default:
+                break;
+        }
 
-    /**
-     * Get the date prefix for the migration.
-     *
-     * @return string
-     */
-    protected function getDatePrefix()
-    {
-        return date('Y_m_d_His');
+        return $stub;
     }
 
     /**
@@ -187,16 +96,6 @@ class MigrationCreator extends \Illuminate\Database\Migrations\MigrationCreator
      */
     public function stubPath()
     {
-        return __DIR__.'/stubs';
-    }
-
-    /**
-     * Get the filesystem instance.
-     *
-     * @return \Illuminate\Filesystem\Filesystem
-     */
-    public function getFilesystem()
-    {
-        return $this->files;
+        return config('database.migrations-stub-path') ?: __DIR__.'/stubs';
     }
 }

@@ -17,10 +17,8 @@ class MigrateMakeCommand extends \Illuminate\Database\Console\Migrations\Migrate
         {--create= : The table to be created.}
         {--table= : The table to migrate.}
         {--path= : The location where the migration file should be created.}
-        {--timestamps=yes : Whether the migration table has timestamps (yes), 
-            no timestamps (no) or nullable timestamps (null) (only when creating, default=yes).}
-        {--ownerships=no : Whether the migration table has ownerships (yes), 
-            no ownerships (no) or nullable ownerships (null) (only when creating, default=no).}';
+        {--timestamps=yes : Whether the migration table has timestamps (yes), no timestamps (no) or nullable timestamps (null) (only when creating, default=yes).}
+        {--ownerships=no : Whether the migration table has ownerships (yes), no ownerships (no) or nullable ownerships (null) (only when creating, default=no).}';
 
 
 
@@ -36,24 +34,24 @@ class MigrateMakeCommand extends \Illuminate\Database\Console\Migrations\Migrate
     {
         switch ($this->input->getOption('timestamps')) {
             case 'no':
-                $timestamps = false;
+                $timestamps = 'no';
                 break;
             case 'null':
                 $timestamps = 'nullable';
                 break;
             default:
-                $timestamps = true;
+                $timestamps = 'yes';
                 break;
         }
         switch ($this->input->getOption('ownerships')) {
             case 'yes':
-                $ownerships = true;
+                $ownerships = 'yes';
                 break;
             case 'null':
                 $ownerships = 'nullable';
                 break;
             default:
-                $ownerships = false;
+                $ownerships = 'no';
                 break;
         }
 

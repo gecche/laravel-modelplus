@@ -56,7 +56,7 @@ trait Ownerships {
      * @param  string  $column
      * @return \Illuminate\Support\Fluent
      */
-    public function softDeletes($column = 'deleted_by')
+    public function softDeletesOwnerships($column = 'deleted_by')
     {
         return $this->integer($column)->unsigned()->nullable();
     }
