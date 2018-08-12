@@ -3,6 +3,8 @@
 namespace Gecche\ModelPlus\Relations;
 
 
+use Illuminate\Support\Facades\Auth;
+
 class HasMany extends \Illuminate\Database\Eloquent\Relations\HasMany
 {
 
@@ -18,6 +20,10 @@ class HasMany extends \Illuminate\Database\Eloquent\Relations\HasMany
             $attributes[$this->relatedUpdatedBy()] = Auth::id();
         }
 
-        return parent::update($attributes);
+        if ($this->related->usesTimestamps()) {
+            $attributes[$this->relatedUpdatedAt()] = $this->related->freshTimestampString();
+        }
+
+        return parent::updateOwnerships($attributes);
     }
 }

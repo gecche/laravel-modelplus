@@ -2,18 +2,8 @@
 
 namespace Gecche\ModelPlus\Relations;
 
-use Closure;
-use Illuminate\Support\Arr;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Traits\Macroable;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Query\Expression;
-use Illuminate\Database\Eloquent\Collection;
 
-/**
- * @mixin \Illuminate\Database\Eloquent\Builder
- */
 abstract class Relation extends \Illuminate\Database\Eloquent\Relations\Relation
 {
 
@@ -32,8 +22,19 @@ abstract class Relation extends \Illuminate\Database\Eloquent\Relations\Relation
             $column => $this->getRelated()->freshTimestampString(),
             $ownershipsColumn => Auth::id(),
         ]);
+
     }
 
+    /**
+     * Run a raw update against the base query.
+     *
+     * @param  array  $attributes
+     * @return int
+     */
+    public function rawUpdate(array $attributes = [])
+    {
+        return $this->query->withoutGlobalScopes()->updateOwnerships($attributes);
+    }
 
     /**
      * Get the name of the "created at" column.

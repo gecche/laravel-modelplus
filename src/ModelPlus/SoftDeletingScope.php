@@ -2,6 +2,7 @@
 
 namespace Gecche\ModelPlus;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 class SoftDeletingScope extends \Illuminate\Database\Eloquent\SoftDeletingScope
@@ -23,7 +24,7 @@ class SoftDeletingScope extends \Illuminate\Database\Eloquent\SoftDeletingScope
             $column = $this->getDeletedAtColumn($builder);
             $ownershipsColumn = $this->getDeletedByColumn($builder);
 
-            return $builder->update([
+            return $builder->updateOwnerships([
                 $column => $builder->getModel()->freshTimestampString(),
                 $ownershipsColumn => Auth::id(),
             ]);
@@ -56,7 +57,7 @@ class SoftDeletingScope extends \Illuminate\Database\Eloquent\SoftDeletingScope
         $builder->macro('restore', function (Builder $builder) {
             $builder->withTrashed();
 
-            return $builder->update([
+            return $builder->updateOwnerships([
                 $builder->getModel()->getDeletedAtColumn() => null,
                 $builder->getModel()->getDeletedByColumn() => null
             ]);

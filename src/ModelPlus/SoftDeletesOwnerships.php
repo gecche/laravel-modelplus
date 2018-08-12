@@ -50,7 +50,7 @@ trait SoftDeletesOwnerships
             $columns[$this->getUpdatedByColumn()] = $userId;
         }
 
-        $query->update($columns);
+        $query->updateOwnerships($columns);
     }
 
     /**

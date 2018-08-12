@@ -5,6 +5,7 @@ namespace Gecche\ModelPlus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 class ModelPlusServiceProvider extends ServiceProvider
@@ -55,6 +56,10 @@ class ModelPlusServiceProvider extends ServiceProvider
                 $values, $this->model->getUpdatedByColumn(),
                 Auth::id()
             );
+        });
+
+        Builder::macro('updateOwnerships', function (array $values) {
+            return $this->toBase()->update($this->addUpdatedByColumn($this->addUpdatedAtColumn($values)));
         });
 
 

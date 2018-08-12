@@ -5,6 +5,7 @@ namespace Gecche\ModelPlus\Relations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\Concerns\SupportsDefaultModels;
+use Illuminate\Support\Facades\Auth;
 
 class HasOne extends \Illuminate\Database\Eloquent\Relations\HasOne
 {
@@ -20,6 +21,10 @@ class HasOne extends \Illuminate\Database\Eloquent\Relations\HasOne
             $attributes[$this->relatedUpdatedBy()] = Auth::id();
         }
 
-        return parent::update($attributes);
+        if ($this->related->usesTimestamps()) {
+            $attributes[$this->relatedUpdatedAt()] = $this->related->freshTimestampString();
+        }
+
+        return parent::updateOwnerships($attributes);
     }
 }

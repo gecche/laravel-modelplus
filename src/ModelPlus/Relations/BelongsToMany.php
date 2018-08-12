@@ -58,7 +58,7 @@ class BelongsToMany extends \Illuminate\Database\Eloquent\Relations\BelongsToMan
         // the related model's timestamps, to make sure these all reflect the changes
         // to the parent models. This will help us keep any caching synced up here.
         if (count($ids = $this->allRelatedIds()) > 0) {
-            $this->getRelated()->newQuery()->whereIn($key, $ids)->update($columns);
+            $this->getRelated()->newQuery()->whereIn($key, $ids)->updateOwnerships($columns);
         }
     }
 

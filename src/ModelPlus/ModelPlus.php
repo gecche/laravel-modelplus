@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 /**
  * ModelPlus - Eloquent model base class with some pluses!
@@ -13,14 +14,16 @@ use Illuminate\Database\Eloquent\Model;
 abstract class ModelPlus extends Model {
 
 
+    use HasTimestamps;
+//    use SoftDeletes;
     use HasOwnerships {
         HasOwnerships::touch insteadof HasTimestamps;
     }
-    use SoftDeletesOwnerships {
-        SoftDeletesOwnerships::bootSoftDeletes insteadof SoftDeletes;
-        SoftDeletesOwnerships::runSoftDelete insteadof SoftDeletes;
-        SoftDeletesOwnerships::restore insteadof SoftDeletes;
-    }
+//    use SoftDeletesOwnerships {
+//        SoftDeletesOwnerships::bootSoftDeletes insteadof SoftDeletes;
+//        SoftDeletesOwnerships::runSoftDelete insteadof SoftDeletes;
+//        SoftDeletesOwnerships::restore insteadof SoftDeletes;
+//    }
 
 
     /**
@@ -68,7 +71,8 @@ abstract class ModelPlus extends Model {
         $dirty = $this->getDirty();
 
         if (count($dirty) > 0) {
-            $this->setKeysForSaveQuery($query)->update($dirty);
+
+            $this->setKeysForSaveQuery($query)->updateOwnerships($dirty);
 
             $this->fireModelEvent('updated', false);
 

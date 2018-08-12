@@ -30,7 +30,7 @@ trait InteractsWithPivotTableOwnerships
             $attributes = $this->addTimestampsToAttachment($attributes, true);
         }
 
-        $updated = $this->newPivotStatementForId($id)->update(
+        $updated = $this->newPivotStatementForId($id)->updateOwnerships(
             $this->castAttributes($attributes)
         );
 
