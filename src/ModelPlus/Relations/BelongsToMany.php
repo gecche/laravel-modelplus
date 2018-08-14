@@ -3,7 +3,6 @@
 namespace Gecche\ModelPlus\Relations;
 
 use Gecche\ModelPlus\Relations\Concerns\InteractsWithPivotTableOwnerships;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Relations\Concerns\InteractsWithPivotTable;
 
 class BelongsToMany extends \Illuminate\Database\Eloquent\Relations\BelongsToMany
@@ -51,7 +50,7 @@ class BelongsToMany extends \Illuminate\Database\Eloquent\Relations\BelongsToMan
 
         $columns = [
             $this->related->getUpdatedAtColumn() => $this->related->freshTimestampString(),
-            $this->related->getUpdatedByColumn() => Auth::id(),
+            $this->related->getUpdatedByColumn() => $this->related->currentUserId(),
         ];
 
         // If we actually have IDs for the relation, we will run the query to update all

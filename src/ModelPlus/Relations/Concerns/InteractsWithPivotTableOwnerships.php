@@ -5,7 +5,6 @@ namespace Gecche\ModelPlus\Relations\Concerns;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as BaseCollection;
-use Illuminate\Support\Facades\Auth;
 
 trait InteractsWithPivotTableOwnerships
 {
@@ -126,7 +125,7 @@ trait InteractsWithPivotTableOwnerships
      */
     protected function addOwnershipsToAttachment(array $record, $exists = false)
     {
-        $userId = Auth::id();
+        $userId = $this->parent->currentUserId();
 
         if (! $exists && $this->hasPivotColumn($this->createdBy())) {
             $record[$this->createdBy()] = $userId;

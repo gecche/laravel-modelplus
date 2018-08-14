@@ -2,14 +2,22 @@
 
 namespace Gecche\ModelPlus;
 
+use Gecche\ModelPlus\Console\CompileRelationsCommand;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 class ModelPlusServiceProvider extends ServiceProvider
 {
+
+    /**
+     * The commands to be registered.
+     *
+     * @var array
+     */
+    protected $commands = [
+        'CompileRelations',
+    ];
 
     /**
      * Register the service provider.
@@ -21,16 +29,29 @@ class ModelPlusServiceProvider extends ServiceProvider
 //        $this->app->alias('artisan',\Gecche\Multidomain\Console\Application::class);
 //
 //
-//        foreach ($this->commands as $command)
-//        {
-//            $this->{"register{$command}Command"}();
-//        }
-//
-//        $this->commands(
-//            "command.domain",
-//            "command.domain.update_env"
-//        );
+        foreach ($this->commands as $command)
+        {
+            $this->{"register{$command}Command"}();
+        }
 
+        $this->commands(
+            "command.modelplus.relations"
+        );
+
+    }
+
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
+    protected function registerCompileRelationsCommand()
+    {
+        $this->app->singleton('command.modelplus.relations', function()
+        {
+            return new CompileRelationsCommand;
+        });
     }
 
 
@@ -54,7 +75,7 @@ class ModelPlusServiceProvider extends ServiceProvider
 
             return Arr::add(
                 $values, $this->model->getUpdatedByColumn(),
-                Auth::id()
+                $this->model->currentUserId()
             );
         });
 

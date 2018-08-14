@@ -3,8 +3,6 @@
 namespace Gecche\ModelPlus\Relations;
 
 
-use Illuminate\Support\Facades\Auth;
-
 class HasMany extends \Illuminate\Database\Eloquent\Relations\HasMany
 {
 
@@ -17,7 +15,7 @@ class HasMany extends \Illuminate\Database\Eloquent\Relations\HasMany
     public function update(array $attributes)
     {
         if ($this->related->usesOwnerships()) {
-            $attributes[$this->relatedUpdatedBy()] = Auth::id();
+            $attributes[$this->relatedUpdatedBy()] = $this->related->currentUserId();
         }
 
         if ($this->related->usesTimestamps()) {

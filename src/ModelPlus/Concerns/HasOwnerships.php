@@ -106,4 +106,14 @@ trait HasOwnerships
     {
         return static::UPDATED_BY;
     }
+
+    /**
+     * Get a current user id for the model.
+     *
+     * @return int
+     */
+    public function currentUserId()
+    {
+        return Auth::id();
+    }
 }

@@ -1,0 +1,12 @@
+<?php
+
+namespace {{modelsnamespace}}Relations;
+
+{{useRelations}}
+
+trait {{ModelName}}Relations
+{
+
+    {{
+
+}

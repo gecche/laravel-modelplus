@@ -3,7 +3,6 @@
 namespace Gecche\ModelPlus;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 
 class SoftDeletingScope extends \Illuminate\Database\Eloquent\SoftDeletingScope
 {
@@ -26,7 +25,7 @@ class SoftDeletingScope extends \Illuminate\Database\Eloquent\SoftDeletingScope
 
             return $builder->updateOwnerships([
                 $column => $builder->getModel()->freshTimestampString(),
-                $ownershipsColumn => Auth::id(),
+                $ownershipsColumn => $builder->getModel()->currentUserId(),
             ]);
         });
     }

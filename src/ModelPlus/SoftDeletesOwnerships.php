@@ -2,12 +2,13 @@
 
 namespace Gecche\ModelPlus;
 
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 trait SoftDeletesOwnerships
 {
 
 
+    use SoftDeletes;
     /**
      * Boot the soft deleting trait for a model.
      *
@@ -29,7 +30,7 @@ trait SoftDeletesOwnerships
         $query = $this->newModelQuery()->where($this->getKeyName(), $this->getKey());
 
         $time = $this->freshTimestamp();
-        $userId = Auth::id();
+        $userId = $this->currentUserId();
 
         $columns = [
             $this->getDeletedAtColumn() => $this->fromDateTime($time),

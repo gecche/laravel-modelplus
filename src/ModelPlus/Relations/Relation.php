@@ -2,7 +2,6 @@
 
 namespace Gecche\ModelPlus\Relations;
 
-use Illuminate\Support\Facades\Auth;
 
 abstract class Relation extends \Illuminate\Database\Eloquent\Relations\Relation
 {
@@ -20,7 +19,7 @@ abstract class Relation extends \Illuminate\Database\Eloquent\Relations\Relation
 
         $this->rawUpdate([
             $column => $this->getRelated()->freshTimestampString(),
-            $ownershipsColumn => Auth::id(),
+            $ownershipsColumn => $this->getRelated()->currentUserId(),
         ]);
 
     }
