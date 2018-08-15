@@ -221,7 +221,7 @@ abstract class ModelPlus extends Model {
      */
     public static function getRelationsData()
     {
-        return self::$relationsData;
+        return static::$relationsData;
     }
 
 

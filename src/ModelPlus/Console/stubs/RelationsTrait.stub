@@ -1,12 +1,10 @@
 <?php
 
-namespace {{modelsnamespace}}Relations;
-
-{{useRelations}}
+namespace {{modelsnamespace}}\Relations;
 
 trait {{ModelName}}Relations
 {
 
-    {{
+{{relations}}
 
 }
