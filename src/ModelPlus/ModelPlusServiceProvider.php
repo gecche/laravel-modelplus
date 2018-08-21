@@ -3,6 +3,7 @@
 namespace Gecche\ModelPlus;
 
 use Gecche\ModelPlus\Console\CompileRelationsCommand;
+use Gecche\ModelPlus\DBHelpers\DBHelpersManager;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
@@ -26,9 +27,10 @@ class ModelPlusServiceProvider extends ServiceProvider
      */
     public function register()
     {
-//        $this->app->alias('artisan',\Gecche\Multidomain\Console\Application::class);
-//
-//
+        $this->app->singleton('modelplus.dbhelpers', function ($app) {
+            return new DBHelpersManager($app);
+        });
+
         foreach ($this->commands as $command)
         {
             $this->{"register{$command}Command"}();
