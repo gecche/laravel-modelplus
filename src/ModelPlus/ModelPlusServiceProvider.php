@@ -27,9 +27,6 @@ class ModelPlusServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('modelplus.dbhelpers', function ($app) {
-            return new DBHelpersManager($app);
-        });
 
         foreach ($this->commands as $command)
         {

@@ -20,7 +20,7 @@ abstract class ModelPlus extends Model {
     use Concerns\HasValidation;
     use HasTimestamps;
     use HasRelationships;
-    use DBHelpers, HasOwnerships {
+    use HasOwnerships {
         HasOwnerships::touch insteadof HasTimestamps;
     }
     use ModelPlusHasRelationships {
