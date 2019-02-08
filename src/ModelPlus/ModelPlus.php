@@ -167,5 +167,15 @@ abstract class ModelPlus extends Model {
         return true;
     }
 
+    /**
+     * @return array
+     */
+    public function getAppends()
+    {
+        return $this->appends;
+    }
+
+
+
 
 }
