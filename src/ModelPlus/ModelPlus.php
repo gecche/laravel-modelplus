@@ -1,5 +1,6 @@
 <?php namespace Gecche\ModelPlus;
 
+use Gecche\ModelPlus\Concerns\HasFormHelpers;
 use Gecche\ModelPlus\Concerns\HasOwnerships;
 use Gecche\ModelPlus\Concerns\HasRelationships as ModelPlusHasRelationships;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,6 +30,7 @@ abstract class ModelPlus extends Model {
         ModelPlusHasRelationships::newBelongsToMany insteadof HasRelationships;
         ModelPlusHasRelationships::getMorphClass insteadof HasRelationships;
     }
+    use HasFormHelpers;
 
 
     /** This class "has one model" if its ID is an FK in that model */

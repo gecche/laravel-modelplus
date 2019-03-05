@@ -6,110 +6,98 @@ use Illuminate\Support\Facades\Validator;
 
 trait HasFormHelpers
 {
-    public $defaultOrderColumns = array('id' => 'ASC');
-    public $columnsForSelectList = array('id');
-    public $columnsSearchAutoComplete = array('id');
+    public $defaultOrderColumns = ['id' => 'ASC'];
+    public $columnsForSelectList = ['id'];
+    public $columnsSearchAutoComplete = ['id'];
     public $nItemsAutoComplete = 20;
     public $nItemsForSelectList = 100;
     public $itemNoneForSelectList = false;
     public $fieldsSeparator = ' - ';
 
+    protected $keynameInList = 'keyname';
 
-    public static function getForSelectList($columns = null, $separator = null, $params = array())
+
+    public function getForSelectList($builder = null, $columns = null, $params = [], $listValuesFunc = null, $postFormatFunc = 'sortASC')
     {
 
 
-        $model = new static();
+        if (is_null($builder)) {
+            $builder = $this->newQuery();
+        }
 
+        $key = array_get($params,'key',$this->getKeyName());
+
+        if (is_string($columns)) {
+            $columns = [$columns];
+        }
         if ($columns === null) {
-            $columns = $model->getColumnsForSelectList();
+            $columns = $this->getColumnsForSelectList();
         }
-        if ($separator === null) {
-            $separator = $model->getFieldsSeparator();
-        }
+        $columns = [$key . ' as '.$this->keynameInList] + $columns;
 
-        if (array_get($params, 'nItems', false)) {
-            $nItems = $params['nItems'];
-        } else {
-            $nItems = $model->getNItemsForSelectList();
-        }
+        $separator = array_get($params,'separator',$this->getSeparatorForSelectList());
+        $maxItems = array_get($params,'max_items',$this->getMaxItemsForSelectList());
+        $distinct = array_get($params,'distinct',false);
+        $orderColumns = array_get($params,'order',$this->getDefaultOrderColumns());
 
-        $namespace = $model->models_namespace;
-        $classed = get_called_class();
 
-        $modelRelativeName = trim_namespace($model->models_namespace, get_called_class());
-        $modelNameForPermission = strtoupper(snake_case($modelRelativeName));
-
-        $permissionPrefix = array_get($params,'permissionPrefix','LIST');
-
-        $permission = array_get($params, 'permission', $permissionPrefix.'_' . $modelNameForPermission);
-
-        $listBuilder = Acl::query($model, $permission, $model->getTable() . '.' . $model->getKeyName());
-
-        $filters = array_get($params, 'filters', array());
-
-        foreach ($filters as $filter) {
-            $filter_field = array_get($filter, 'field', 'id');
-            $filter_operator = array_get($filter, 'operator', '=');
-            $filter_value = array_get($filter, 'value', -1);
-            switch (strtolower($filter_operator)) {
-                case 'null':
-                    $listBuilder = $listBuilder->whereNull($filter_field);
-                    break;
-                case 'not_null':
-                    $listBuilder = $listBuilder->whereNotNull($filter_field);
-                    break;
-                case 'in':
-                    $listBuilder = $listBuilder->whereIn($filter_field, $filter_value);
-                    break;
-                case 'not_in':
-                    $listBuilder = $listBuilder->whereNotIn($filter_field, $filter_value);
-                    break;
-                default:
-                    $listBuilder = $listBuilder->where($filter_field, $filter_operator, $filter_value);
-                    break;
-            }
-
-        }
-
-        $orderColumns = array_get($params,'order',$model->getDefaultOrderColumns());
-
+        //IMPOSTO ORDINAMENTO
         foreach ($orderColumns as $orderColumn => $orderType) {
-            $listBuilder = $listBuilder->orderBy($orderColumn, $orderType);
+            $builder->orderBy($orderColumn, $orderType);
         }
 
-        //LIMITO A 100
-        if (!array_get($params, 'all', false)) {
-            $listBuilder = $listBuilder->take($nItems);
+        //IMPOSTO LIMITE ELEMENTI
+        if ($maxItems) {
+            $builder->take($maxItems);
         }
 
 //        Log::info($listBuilder->toSql());
 
 
-        $list = $listBuilder->select($model->getTable() . '.*')->get();
 
-        $ids = $list->lists($model->getKeyName())->all();
+        $list = $builder->select($columns)->get();
 
-        $values = static::getForSelectListValues($list,$columns,$separator,$params);
+        $ids = $list->lists($this->keynameInList)->all();
 
-
-        $return_array = array_combine($ids, $values->toArray());
-
-        if (array_get($params, 'filter_all', false)) {
-            $return_array = array(env('FORM_FILTER_ALL', -99) => trans_uc('app.filter_all')) + $return_array;
+        if ($listValuesFunc instanceof \Closure) {
+            $values = $listValuesFunc($list);
+        } elseif (is_string($listValuesFunc)) {
+            $listValuesMethod = 'getSelectListValues'.$listValuesFunc;
+            $values = $this->$listValuesMethod($list,$columns,$separator);
+        } else {
+            $values = $this->getSelectListValuesStandard($list,$columns,$separator);
         }
 
-        $itemNoneArray = array(env('FORM_ITEM_NONE', -99) => trans_uc('app.item_none'));
-        $itemNoneParam = array_get($params, 'item_none', null);
-        if ($itemNoneParam || (is_null($itemNoneParam) && $model->itemNoneForSelectList)) {
-            $return_array = $itemNoneArray + $return_array;
+        $selectList = array_combine($ids, $values->toArray());
+
+        if ($distinct) {
+            $selectList = array_unique($selectList);
         }
 
-        return $return_array;
+        if ($postFormatFunc instanceof \Closure) {
+            $selectList = $postFormatFunc($selectList);
+        } elseif (is_string($postFormatFunc)) {
+            $postFormatMethod = 'postFormatSelectList'.$postFormatFunc;
+            $selectList = $this->$postFormatMethod($selectList);
+        }
+
+        return $selectList;
 
     }
 
-    public static function getForSelectListValues($list,$columns,$separator,$params) {
+    public function postFormatSelectListSortASC($selectList) {
+        asort($selectList);
+        return $selectList;
+    }
+
+    public function postFormatSelectListSortDESC($selectList) {
+        arsort($selectList);
+        return $selectList;
+    }
+
+
+    public function getSelectListValuesStandard($list,$columns,$separator) {
+
         $values = $list->map(function ($item) use ($columns, $separator) {
             $value = '';
             foreach ($columns as $column) {
@@ -121,32 +109,38 @@ trait HasFormHelpers
         return $values;
     }
 
+
+
+
     public function getColumnsForSelectList($lang = true)
     {
-        if (!$lang) {
-            return $this->columnsForSelectList;
-        }
 
-        return $this->setCurrentLangFields($this->columnsForSelectList);
+        return $this->columnsForSelectList ?: '*';
+
+//DA VEDERE COME FUNZIOANVA IN CASI DI MULTILINGUA, MA NON SO SE E' DA METTERE QUI!
+//        return $this->setCurrentLangFields($this->columnsForSelectList);
 
     }
 
     /**
      * @return int
      */
-    public function getNItemsForSelectList()
+    public function getMaxItemsForSelectList()
     {
-        return $this->nItemsForSelectList;
+        return $this->nItemsForSelectList ?: 'all';
     }
+
+    public function getSeparatorForSelectList()
+    {
+        return $this->fieldsSeparator;
+    }
+
+
+
 
     public function getNItemsAutoComplete()
     {
         return $this->nItemsAutoComplete;
-    }
-
-    public function getFieldsSeparator()
-    {
-        return $this->fieldsSeparator;
     }
 
     public function getColumnsSearchAutoComplete($lang = true)
@@ -167,13 +161,13 @@ trait HasFormHelpers
             $fields = $model->getColumnsSearchAutoComplete();
         }
         if (is_string($fields)) {
-            $fields = array($fields);
+            $fields = [$fields];
         }
         if ($labelColumns === null) {
             $labelColumns = $model->getColumnsForSelectList();
         }
         if (is_string($labelColumns)) {
-            $labelColumns = array($labelColumns);
+            $labelColumns = [$labelColumns];
         }
         if ($separator === null) {
             $separator = $model->getFieldsSeparator();
@@ -189,11 +183,11 @@ trait HasFormHelpers
         });
         $standardResultCount = $modelBuilder->limit(1)->count();
 
-        $completionItems = array();
+        $completionItems = [];
 
         if ($standardResultCount > 0) {
 
-            $idsToExclude = array();
+            $idsToExclude = [];
             if ($n_items === null) {
                 $n_items = $model->getNItemsAutoComplete();
             }
@@ -286,19 +280,19 @@ trait HasFormHelpers
             $labelValue = trim($labelValue, $separator);
 
             $idValue = $item->getKey();
-            return array(
+            return [
                 'id' => $idValue,
                 'label' => $labelValue,
                 'data' => $item->toArray(),
                 'morph_id' => $idValue,
                 'morph_type' => ltrim(get_class($item), "\\"),
-            );
+            ];
         });
 
-        return array($items, $n_items, $ids);
+        return [$items, $n_items, $ids];
     }
 
-    public function setDefaultOrderColumns($columns = array())
+    public function setDefaultOrderColumns($columns = [])
     {
         $this->defaultOrderColumns = $columns;
     }
@@ -313,5 +307,8 @@ trait HasFormHelpers
         return array_combine($order_lang, array_values($this->defaultOrderColumns));
 
     }
+
+
+
 
 }
