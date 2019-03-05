@@ -33,7 +33,7 @@ trait HasFormHelpers
         if ($columns === null) {
             $columns = $this->getColumnsForSelectList();
         }
-        $columns = [$key . ' as '.$this->keynameInList] + $columns;
+        $columns = [-1 => $key . ' as '.$this->keynameInList] + $columns;
 
         $separator = array_get($params,'separator',$this->getSeparatorForSelectList());
         $maxItems = array_get($params,'max_items',$this->getMaxItemsForSelectList());
@@ -57,7 +57,7 @@ trait HasFormHelpers
 
         $list = $builder->select($columns)->get();
 
-        $ids = $list->lists($this->keynameInList)->all();
+        $ids = $list->pluck($this->keynameInList)->all();
 
         if ($listValuesFunc instanceof \Closure) {
             $values = $listValuesFunc($list);
@@ -149,6 +149,7 @@ trait HasFormHelpers
             return $this->columnsSearchAutoComplete;
         }
 
+        return $this->columnsSearchAutoComplete;
         return $this->setCurrentLangFields($this->columnsSearchAutoComplete);
     }
 
@@ -303,6 +304,7 @@ trait HasFormHelpers
             return $this->defaultOrderColumns;
         }
 
+        return $this->defaultOrderColumns;
         $order_lang = $this->setCurrentLangFields(array_keys($this->defaultOrderColumns));
         return array_combine($order_lang, array_values($this->defaultOrderColumns));
 
