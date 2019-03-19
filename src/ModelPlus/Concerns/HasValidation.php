@@ -43,15 +43,15 @@ trait HasValidation
     public function getModelValidationSettings($uniqueRules = true, $rules = [], $customMessages = [], $customAttributes = [])
     {
 
-        $rules = array_merge(self::$rules,$rules);
+        $rules = array_merge(static::$rules,$rules);
         if ($this->getKey() && $uniqueRules) {
             $rules = $this->buildUniqueExclusionRules($rules);
         }
 
         $validationData = [
             'rules' => $rules,
-            'customMessages' => array_merge(self::$customMessages,$customMessages),
-            'customAttributes' => array_merge(self::$customAttributes,$customAttributes),
+            'customMessages' => array_merge(static::$customMessages,$customMessages),
+            'customAttributes' => array_merge(static::$customAttributes,$customAttributes),
         ];
 
         return $validationData;
